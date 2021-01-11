@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">AlarmProject</string>
+    <string name="password">password:</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="left_arrow"><![CDATA[<--]]></string>
+    <string name="profile">Profile</string>
+    <string name="save">Save</string>
+    <string name="name">Name:</string>
+    <string name="hello">HelloUser</string>
+    <string name="close">Close</string>
+    <string name="open">Open</string>
+    <string name="back">Back</string>
+    <string name="logout">Logout</string>
+    <string name="plus_sign">+</string>
+    <string name="title">title</string>
+    <string name="description">description:</string>
+    <string name="add_notification">add_notification</string>
+    <string name="reminder_name">Reminder name:</string>
+    <string name="username">Username:</string>
+    <string name="date">Date</string>
+    <string name="login">login</string>
+    <string name="right_arrow"><![CDATA[-->]]></string>
+    <string name="clock_image">clock_image</string>
+    <string name="add">add</string>
+
+    <string-array name="menu_options">
+        <item> Profile </item>
+        <item> Disconnect </item>
+    </string-array>
+</resources>
