@@ -1,22 +1,16 @@
 package mazpen.rockettar.alarmproject.Objects;
+
 import java.util.ArrayList;
 
 public class User {
     public String username;
     public String password;
-    public ArrayList<Notification> userNotifications;
+    public ArrayList<Reminder> userReminders;
 
-    public User(String username, String password)
-    {
+    public User(String username, String password) {
         this.username = username;
         this.password = password;
-        this.userNotifications = new ArrayList<Notification>();
+        this.userReminders = new ArrayList<Reminder>();
     }
-/*
-    public void AddNotification(Notification notification){
-        this.userNotifications.add(notification);
-    }
-
- */
 }
 

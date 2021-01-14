@@ -1,4 +1,5 @@
 package mazpen.rockettar.alarmproject.Adapters;
+
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
@@ -9,73 +10,72 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+
+import mazpen.rockettar.alarmproject.DetailsFragment;
 import mazpen.rockettar.alarmproject.MainActivity;
-import mazpen.rockettar.alarmproject.Objects.Notification;
+import mazpen.rockettar.alarmproject.Objects.Reminder;
+import mazpen.rockettar.alarmproject.Objects.User;
 import mazpen.rockettar.alarmproject.R;
-import mazpen.rockettar.alarmproject.Model.LoginViewModel;
+import mazpen.rockettar.alarmproject.ViewModel.AlarmViewModel;
 
-public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>{
-    public Serializable allUsers;
+public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
+    public HashMap<String, ArrayList<Reminder>> allUsers;
     public String currUser;
-    public ArrayList<Notification> allNotifications;
+    public ArrayList<Reminder> allReminders;
     private final Context mContext;
-    private final LoginViewModel loginViewModel = LoginViewModel.getInstance();
     private OnItemClickListener itemListener;
-    private View.OnClickListener onClickListener;
     public Fragment detailsFragment;
+    public AlarmViewModel alarmViewModel = new AlarmViewModel();
 
-    public interface OnItemClickListener{
+    public interface OnItemClickListener {
         void onItemClick(int position);
     }
 
-    public void setOnItemClickedListener(OnItemClickListener listener){
-        this.itemListener  = listener;
+    public void setOnItemClickedListener(OnItemClickListener listener) {
+        this.itemListener = listener;
     }
-    public void setOnClickListener(View.OnClickListener onClickListener)
-    {
-        this.onClickListener = onClickListener;
-    }
-    public RecyclerViewAdapter(Context context, ArrayList<Notification> allNotifications, Serializable allUsers, String currUser,
-                               Fragment detailsFragment)
-    {
-        this.allNotifications = allNotifications;
+
+
+    public RecyclerViewAdapter(Context context, ArrayList<Reminder> allReminders, HashMap<String, ArrayList<Reminder>> allUsers, String currUser,
+                               Fragment detailsFragment) {
+        this.allReminders = allReminders;
         this.mContext = context;
         this.allUsers = allUsers;
         this.currUser = currUser;
-        this.detailsFragment = detailsFragment;
+        this.detailsFragment = new DetailsFragment();
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.notification_item,parent, false);
-        view.setOnClickListener(onClickListener);
-        ViewHolder holder = new ViewHolder(view, itemListener);
-        return holder;
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.reminder_item, parent, false);
+        return new ViewHolder(view, itemListener);
     }
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
-        holder.notificationDate.setText(allNotifications.get(position).notificationDate);
-        holder.notificationTime.setText(allNotifications.get(position).notificationTime);
-        holder.notificationTitle.setText(allNotifications.get(position).title);
-        holder.notificationDescription.setText(allNotifications.get(position).description);
+        holder.reminderDate.setText(allReminders.get(position).ReminderDate);
+        holder.reminderTime.setText(allReminders.get(position).ReminderTime);
+        holder.reminderTitle.setText(allReminders.get(position).title);
+        holder.reminderDescription.setText(allReminders.get(position).description);
+        final String reminderId = allReminders.get(position).id;
 
-        holder.parentLayout.setOnClickListener(new View.OnClickListener() {
+        holder.reminderItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Notification notification = new Notification(holder.notificationTitle.getText().toString(),
-                        holder.notificationDescription.getText().toString(),
-                        holder.notificationDate.getText().toString(),holder.notificationTime.getText().toString());
-                loginViewModel.prevNotification = notification;
+                /*
+                alarmViewModel.selectedReminderId = new Reminder(holder.reminderTitle.getText().toString(),
+                        holder.reminderDescription.getText().toString(),
+                        holder.reminderDate.getText().toString(), holder.reminderTime.getText().toString()).id;
+
+                 */
+                alarmViewModel.selectedReminderId = reminderId;
                 Bundle arguments = new Bundle();
-                LoginViewModel loginViewModel = LoginViewModel.getInstance();
-                arguments.putSerializable("Prev Notification", notification);
-                ((MainActivity)mContext).detailsFragment.setArguments(arguments);
+                arguments.putString("Prev Reminder Id", alarmViewModel.selectedReminderId);
+                ((MainActivity) mContext).detailsFragment.setArguments(arguments);
                 FragmentTransaction fragmentManager = ((MainActivity) mContext).getSupportFragmentManager().beginTransaction();
                 fragmentManager.replace(R.id.fragmentFiller, detailsFragment);
                 fragmentManager.commit();
@@ -87,35 +87,37 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     @Override
     public int getItemCount() {
-        if(allNotifications == null) { return 0;}
-        return allNotifications.size();
+        if (allReminders == null) {
+            return 0;
+        }
+        return allReminders.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView image;
-        TextView notificationTitle;
-        TextView notificationDescription;
-        TextView notificationDate;
-        TextView notificationTime;
-        ConstraintLayout parentLayout;
+        TextView reminderTitle;
+        TextView reminderDescription;
+        TextView reminderDate;
+        TextView reminderTime;
+        //TextView reminderId;
+        int reminderId;
+        ConstraintLayout reminderItem;
+
         public ViewHolder(@NonNull View itemView, final OnItemClickListener listener) {
             super(itemView);
-            image = itemView.findViewById(R.id.image);
-            notificationDate = itemView.findViewById(R.id.notificationDate);
-            notificationDescription = itemView.findViewById(R.id.notificationDescription);
-            notificationTitle = itemView.findViewById(R.id.notificationTitle);
-            notificationTime = itemView.findViewById(R.id.notificationTime);
-            parentLayout = itemView.findViewById(R.id.parentLayout);
+            reminderDate = itemView.findViewById(R.id.ReminderDate);
+            reminderDescription = itemView.findViewById(R.id.ReminderDescription);
+            reminderTitle = itemView.findViewById(R.id.ReminderTitle);
+            reminderTime = itemView.findViewById(R.id.ReminderTime);
+            reminderItem = itemView.findViewById(R.id.reminder_item);
+
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(listener!=null)
-                    {
+                    if (listener != null) {
                         int position = getAdapterPosition();
-                        if (position!= RecyclerView.NO_POSITION)
-                        {
+                        if (position != RecyclerView.NO_POSITION) {
                             listener.onItemClick(position);
                         }
                     }
@@ -123,6 +125,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             });
 
         }
+
+
     }
+
+
 
 }

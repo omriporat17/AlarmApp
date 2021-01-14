@@ -17,9 +17,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import mazpen.rockettar.alarmproject.Adapters.RecyclerViewAdapter;
-import mazpen.rockettar.alarmproject.Model.LoginViewModel;
+import mazpen.rockettar.alarmproject.ViewModel.AlarmViewModel;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -28,86 +30,48 @@ public class RemindersFragment extends Fragment {
     private Activity hostActivity;
     private FragmentTransaction fragmentManager;
     private Fragment detailsFragment;
+    private Toolbar toolbar;
+    public AlarmViewModel alarmViewModel = new AlarmViewModel();
 
     public RemindersFragment() {
         super(R.layout.fragment_reminders);
     }
 
-    private Toolbar toolbar;
-    private final LoginViewModel loginViewModel = LoginViewModel.getInstance();
-
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-        toolbar = getActivity().findViewById(R.id.toolbar);
-        toolbar.setTitle("Reminders Fragment");
+        if (getActivity() != null) {
+            super.onCreate(savedInstanceState);
+            setHasOptionsMenu(true);
+            toolbar = getActivity().findViewById(R.id.toolbar);
+            toolbar.setTitle("Reminders Fragment");
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_reminders, container, false);
-        this.hostActivity = getActivity();
-        this.fragmentManager = getActivity().getSupportFragmentManager().beginTransaction();
-        this.detailsFragment = ((MainActivity)(getActivity())).detailsFragment;
+        initVars();
         final RecyclerView recyclerView = initRecyclerView(view);
-        FloatingActionButton addNotificationButton = view.findViewById(R.id.addNotificationButton);
-        toolbar.setTitle("hello " + loginViewModel.currUser.username + "!");
-
-        addNotificationButton.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton addReminderButton = view.findViewById(R.id.addReminderButton);
+        addReminderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 fragmentManager.replace(R.id.fragmentFiller, detailsFragment, "details fragment");
                 fragmentManager.commit();
-
             }
         });
         recyclerView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 int itemPosition = recyclerView.getChildLayoutPosition(v);
-                loginViewModel.prevNotification = loginViewModel.getCurrUser().userNotifications.get(itemPosition);
+                alarmViewModel.selectedReminderId = alarmViewModel.currUser.userReminders.get(itemPosition).id;
                 fragmentManager.replace(R.id.fragmentFiller, detailsFragment, "details fragment");
                 fragmentManager.commit();
 
             }
         });
         return view;
-    }
-
-
-    private RecyclerView initRecyclerView(View view) {
-        RecyclerView recyclerView = view.findViewById(R.id.allNotifications);
-        final RecyclerViewAdapter adapter = new RecyclerViewAdapter(hostActivity, loginViewModel.getCurrUser().userNotifications,
-                loginViewModel.getAllUsers(), loginViewModel.getCurrUser().username, ((MainActivity) getActivity()).detailsFragment);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(hostActivity));
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-            @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                int position = viewHolder.getAdapterPosition();
-                adapter.allNotifications.remove(loginViewModel.currUser.userNotifications
-                        .get(viewHolder.getAdapterPosition()));
-                adapter.notifyItemChanged(position);
-                adapter.notifyItemRangeRemoved(position, 1);
-            }
-        });
-        itemTouchHelper.attachToRecyclerView(recyclerView);
-        adapter.setOnItemClickedListener(new RecyclerViewAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                loginViewModel.prevNotification = loginViewModel.getCurrUser().userNotifications.get(position);
-            }
-        });
-        return recyclerView;
-
     }
 
     @Override
@@ -127,5 +91,49 @@ public class RemindersFragment extends Fragment {
             startActivity(intent1);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void initVars() {
+        toolbar.setTitle("hello " + alarmViewModel.currUser.username + "!");
+        if (getActivity() != null) {
+            hostActivity = getActivity();
+            fragmentManager = getActivity().getSupportFragmentManager().beginTransaction();
+            //detailsFragment = ((MainActivity) (getActivity())).detailsFragment;
+            detailsFragment = new DetailsFragment();
+        }
+
+    }
+
+    private RecyclerView initRecyclerView(View view) {
+        RecyclerView recyclerView = view.findViewById(R.id.all_reminders);
+        final RecyclerViewAdapter adapter = new RecyclerViewAdapter(hostActivity, alarmViewModel.currUser.userReminders,
+                alarmViewModel.allUsers, alarmViewModel.currUser.username, ((MainActivity) hostActivity).detailsFragment);
+
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(hostActivity));
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                adapter.allReminders.remove(alarmViewModel.currUser.userReminders
+                        .get(viewHolder.getAdapterPosition()));
+                adapter.notifyItemChanged(position);
+                adapter.notifyItemRangeRemoved(position, 1);
+            }
+        });
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+        adapter.setOnItemClickedListener(new RecyclerViewAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(int position) {
+                alarmViewModel.selectedReminderId = alarmViewModel.currUser.userReminders.get(position).id;
+            }
+        });
+        return recyclerView;
+
     }
 }

@@ -1,20 +1,26 @@
 package mazpen.rockettar.alarmproject;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.util.ArrayList;
-import mazpen.rockettar.alarmproject.Objects.Notification;
+import java.util.HashMap;
+
+import mazpen.rockettar.alarmproject.Objects.Reminder;
 import mazpen.rockettar.alarmproject.Objects.User;
-import mazpen.rockettar.alarmproject.Model.LoginViewModel;
+import mazpen.rockettar.alarmproject.ViewModel.AlarmViewModel;
 
 public class LoginActivity extends AppCompatActivity {
-    private final LoginViewModel loginViewModel = LoginViewModel.getInstance();
     private EditText etUsername;
     private FloatingActionButton etLogin;
-    public ArrayList<String> allUsers = new ArrayList<String>();
+    private final AlarmViewModel alarmViewModel = new AlarmViewModel();
+    public HashMap<String, ArrayList<Reminder>> allUsers = new HashMap<>();
     public String inputName;
 
     @Override
@@ -32,57 +38,36 @@ public class LoginActivity extends AppCompatActivity {
                 if (inputName.isEmpty() || !isValid) {
                     etLogin.setEnabled(false);
                 } else {
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        putInModel();
-                        startActivity(intent);
-                    }
+                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    putInModel();
+                    startActivity(intent);
+                }
                 etLogin.setEnabled(true);
             }
         });
     }
+
+    @Override
+    public void onBackPressed() {
+        finish();
+    }
+
     private boolean validate(String name) {
-        if (!allUsers.contains(name)) {
-            allUsers.add(name);
+        if (!allUsers.containsKey(name)) {
+            allUsers.put(name, new ArrayList<Reminder>());
         }
         return true;
     }
 
-    private boolean isUserExists(ArrayList<User> allUsers, User user) {
-        for(User user1: allUsers){
-            if(user1.username.equals(user.username)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    private void putInModel()
-    {
+    private void putInModel() {
         User user = new User(inputName, "");
-        ArrayList<User> allUsers = loginViewModel.getAllUsers();
-        if(!isUserExists(allUsers, user))
-        {
-            loginViewModel.allUser.add(user);
-            loginViewModel.getCurrUser().userNotifications = new ArrayList<Notification>();
+        HashMap<String, ArrayList<Reminder>> allUsers = alarmViewModel.allUsers;
+        if (!alarmViewModel.isUserExists(allUsers, user)) {
+            alarmViewModel.allUsers.put(user.username, user.userReminders);
+            alarmViewModel.currUser.userReminders = new ArrayList<>();
+        } else {
+            alarmViewModel.currUser.userReminders = allUsers.get(user.username);
         }
-        else{
-            loginViewModel.getCurrUser().userNotifications = getUserNotificationsFromAllUsers(user);
-        }
-        loginViewModel.getCurrUser().username = user.username;
-    }
-
-    @Override
-    public void onBackPressed() {
-        this.finishAffinity();
-    }
-
-    private ArrayList<Notification> getUserNotificationsFromAllUsers(User user){
-        for (User iterUser: loginViewModel.allUser){
-            if(iterUser.username.equals(user.username)){
-                return iterUser.userNotifications;
-            }
-        }
-        return new ArrayList<Notification>();
+        alarmViewModel.currUser.username = user.username;
     }
 }
